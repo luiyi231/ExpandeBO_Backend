@@ -1,0 +1,65 @@
+using ExpandeBO_Backend.Models;
+using MongoDB.Driver;
+
+namespace ExpandeBO_Backend.Repositories;
+
+public class ProductoRepository : IProductoRepository
+{
+    private readonly IMongoCollection<Producto> _productos;
+
+    public ProductoRepository(IMongoContext context)
+    {
+        _productos = context.Database.GetCollection<Producto>("productos");
+    }
+
+    public async Task<Producto?> GetByIdAsync(string id)
+    {
+        return await _productos.Find(p => p.Id == id).FirstOrDefaultAsync();
+    }
+
+    public async Task<List<Producto>> GetByPerfilComercialIdAsync(string perfilComercialId)
+    {
+        return await _productos.Find(p => p.PerfilComercialId == perfilComercialId).ToListAsync();
+    }
+
+    public async Task<List<Producto>> GetByCategoriaIdAsync(string categoriaId)
+    {
+        return await _productos.Find(p => p.CategoriaId == categoriaId).ToListAsync();
+    }
+
+    public async Task<List<Producto>> GetBySubcategoriaIdAsync(string subcategoriaId)
+    {
+        return await _productos.Find(p => p.SubcategoriaId == subcategoriaId).ToListAsync();
+    }
+
+    public async Task<Producto> CreateAsync(Producto producto)
+    {
+        await _productos.InsertOneAsync(producto);
+        return producto;
+    }
+
+    public async Task<Producto> UpdateAsync(Producto producto)
+    {
+        producto.FechaUltimaActualizacion = DateTime.UtcNow;
+        await _productos.ReplaceOneAsync(p => p.Id == producto.Id, producto);
+        return producto;
+    }
+
+    public async Task<bool> DeleteAsync(string id)
+    {
+        var result = await _productos.DeleteOneAsync(p => p.Id == id);
+        return result.DeletedCount > 0;
+    }
+
+    public async Task<List<Producto>> GetAllAsync()
+    {
+        return await _productos.Find(_ => true).ToListAsync();
+    }
+
+    public async Task<List<Producto>> GetDisponiblesAsync()
+    {
+        return await _productos.Find(p => p.Disponible && p.Stock > 0).ToListAsync();
+    }
+}
+
+

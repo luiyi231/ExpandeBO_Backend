@@ -1,0 +1,101 @@
+using ExpandeBO_Backend.Models;
+using ExpandeBO_Backend.Repositories;
+
+namespace ExpandeBO_Backend.Services;
+
+public class PerfilComercialService : IPerfilComercialService
+{
+    private readonly IPerfilComercialRepository _perfilComercialRepository;
+    private readonly ISuscripcionEmpresaRepository _suscripcionEmpresaRepository;
+    private readonly IPlanRepository _planRepository;
+
+    public PerfilComercialService(
+        IPerfilComercialRepository perfilComercialRepository,
+        ISuscripcionEmpresaRepository suscripcionEmpresaRepository,
+        IPlanRepository planRepository)
+    {
+        _perfilComercialRepository = perfilComercialRepository;
+        _suscripcionEmpresaRepository = suscripcionEmpresaRepository;
+        _planRepository = planRepository;
+    }
+
+    public async Task<PerfilComercial> CreatePerfilAsync(PerfilComercial perfil, string empresaId)
+    {
+        // Validar límite de perfiles según el plan
+        var suscripcion = await _suscripcionEmpresaRepository.GetActivaByEmpresaIdAsync(empresaId);
+        if (suscripcion == null)
+        {
+            throw new InvalidOperationException("La empresa no tiene una suscripción activa");
+        }
+
+        var plan = await _planRepository.GetByIdAsync(suscripcion.PlanId);
+        if (plan == null)
+        {
+            throw new InvalidOperationException("Plan no encontrado");
+        }
+
+        var perfilesExistentes = await _perfilComercialRepository.GetByEmpresaIdAsync(empresaId);
+        if (perfilesExistentes.Count >= plan.MaxPerfilesComerciales)
+        {
+            throw new InvalidOperationException($"Has alcanzado el límite de perfiles comerciales permitidos por tu plan ({plan.MaxPerfilesComerciales})");
+        }
+
+        perfil.EmpresaId = empresaId;
+        perfil.FechaCreacion = DateTime.UtcNow;
+
+        return await _perfilComercialRepository.CreateAsync(perfil);
+    }
+
+    public async Task<PerfilComercial> UpdatePerfilAsync(string perfilId, PerfilComercial perfil, string empresaId)
+    {
+        var perfilExistente = await _perfilComercialRepository.GetByIdAsync(perfilId);
+        if (perfilExistente == null)
+        {
+            throw new KeyNotFoundException("Perfil comercial no encontrado");
+        }
+
+        if (perfilExistente.EmpresaId != empresaId)
+        {
+            throw new UnauthorizedAccessException("No tienes permiso para actualizar este perfil comercial");
+        }
+
+        perfil.Id = perfilId;
+        perfil.EmpresaId = empresaId;
+        perfil.FechaUltimaActualizacion = DateTime.UtcNow;
+
+        return await _perfilComercialRepository.UpdateAsync(perfil);
+    }
+
+    public async Task<bool> DeletePerfilAsync(string perfilId, string empresaId)
+    {
+        var perfil = await _perfilComercialRepository.GetByIdAsync(perfilId);
+        if (perfil == null)
+        {
+            return false;
+        }
+
+        if (perfil.EmpresaId != empresaId)
+        {
+            throw new UnauthorizedAccessException("No tienes permiso para eliminar este perfil comercial");
+        }
+
+        return await _perfilComercialRepository.DeleteAsync(perfilId);
+    }
+
+    public async Task<PerfilComercial?> GetPerfilByIdAsync(string id)
+    {
+        return await _perfilComercialRepository.GetByIdAsync(id);
+    }
+
+    public async Task<List<PerfilComercial>> GetPerfilesByEmpresaAsync(string empresaId)
+    {
+        return await _perfilComercialRepository.GetByEmpresaIdAsync(empresaId);
+    }
+
+    public async Task<List<PerfilComercial>> GetPerfilesActivosAsync()
+    {
+        return await _perfilComercialRepository.GetActivosAsync();
+    }
+}
+
+

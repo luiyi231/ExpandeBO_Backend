@@ -1,0 +1,130 @@
+using ExpandeBO_Backend.Models;
+using ExpandeBO_Backend.Repositories;
+
+namespace ExpandeBO_Backend.Services;
+
+public class PedidoService : IPedidoService
+{
+    private readonly IPedidoRepository _pedidoRepository;
+    private readonly IProductoRepository _productoRepository;
+    private readonly IPerfilComercialRepository _perfilComercialRepository;
+    private readonly IPedidoProductoRepository _pedidoProductoRepository;
+
+    public PedidoService(
+        IPedidoRepository pedidoRepository,
+        IProductoRepository productoRepository,
+        IPerfilComercialRepository perfilComercialRepository,
+        IPedidoProductoRepository pedidoProductoRepository)
+    {
+        _pedidoRepository = pedidoRepository;
+        _productoRepository = productoRepository;
+        _perfilComercialRepository = perfilComercialRepository;
+        _pedidoProductoRepository = pedidoProductoRepository;
+    }
+
+    public async Task<Pedido> CreatePedidoAsync(Pedido pedido)
+    {
+        // Validar que el perfil comercial existe
+        var perfil = await _perfilComercialRepository.GetByIdAsync(pedido.PerfilComercialId);
+        if (perfil == null || !perfil.Activo)
+        {
+            throw new InvalidOperationException("Perfil comercial no encontrado o inactivo");
+        }
+
+        // Validar productos y calcular totales
+        decimal subtotal = 0;
+        foreach (var item in pedido.Items)
+        {
+            var producto = await _productoRepository.GetByIdAsync(item.ProductoId);
+            if (producto == null || !producto.Disponible || producto.Stock < item.Cantidad)
+            {
+                throw new InvalidOperationException($"Producto {item.NombreProducto} no disponible o sin stock suficiente");
+            }
+
+            if (producto.PerfilComercialId != pedido.PerfilComercialId)
+            {
+                throw new InvalidOperationException($"El producto {item.NombreProducto} no pertenece a este perfil comercial");
+            }
+
+            item.PrecioUnitario = producto.Precio;
+            item.Subtotal = producto.Precio * item.Cantidad;
+            subtotal += item.Subtotal;
+        }
+
+        pedido.Subtotal = subtotal;
+        pedido.Total = subtotal; // Por ahora sin impuestos ni descuentos
+        pedido.Estado = "Pendiente";
+        pedido.FechaCreacion = DateTime.UtcNow;
+
+        // Crear el pedido
+        var pedidoCreado = await _pedidoRepository.CreateAsync(pedido);
+
+        // Crear registros en la tabla intermedia (muchos a muchos)
+        foreach (var item in pedido.Items)
+        {
+            var pedidoProducto = new PedidoProducto
+            {
+                PedidoId = pedidoCreado.Id!,
+                ProductoId = item.ProductoId,
+                Cantidad = item.Cantidad,
+                PrecioUnitario = item.PrecioUnitario,
+                Subtotal = item.Subtotal,
+                FechaCreacion = DateTime.UtcNow
+            };
+            await _pedidoProductoRepository.CreateAsync(pedidoProducto);
+        }
+
+        return pedidoCreado;
+    }
+
+    public async Task<Pedido> UpdatePedidoEstadoAsync(string pedidoId, string nuevoEstado, string? empresaId = null)
+    {
+        var pedido = await _pedidoRepository.GetByIdAsync(pedidoId);
+        if (pedido == null)
+        {
+            throw new KeyNotFoundException("Pedido no encontrado");
+        }
+
+        // Si se proporciona empresaId, validar que el pedido pertenece a esa empresa
+        if (!string.IsNullOrEmpty(empresaId))
+        {
+            var perfil = await _perfilComercialRepository.GetByIdAsync(pedido.PerfilComercialId);
+            if (perfil == null || perfil.EmpresaId != empresaId)
+            {
+                throw new UnauthorizedAccessException("No tienes permiso para actualizar este pedido");
+            }
+        }
+
+        var estadosValidos = new[] { "Pendiente", "Confirmado", "EnPreparacion", "EnCamino", "Entregado", "Cancelado" };
+        if (!estadosValidos.Contains(nuevoEstado))
+        {
+            throw new ArgumentException("Estado inválido");
+        }
+
+        pedido.Estado = nuevoEstado;
+        pedido.FechaActualizacion = DateTime.UtcNow;
+
+        return await _pedidoRepository.UpdateAsync(pedido);
+    }
+
+    public async Task<Pedido?> GetPedidoByIdAsync(string id)
+    {
+        return await _pedidoRepository.GetByIdAsync(id);
+    }
+
+    public async Task<List<Pedido>> GetPedidosByClienteAsync(string clienteId)
+    {
+        return await _pedidoRepository.GetByClienteIdAsync(clienteId);
+    }
+
+    public async Task<List<Pedido>> GetPedidosByPerfilComercialAsync(string perfilComercialId)
+    {
+        return await _pedidoRepository.GetByPerfilComercialIdAsync(perfilComercialId);
+    }
+
+    public async Task<List<Pedido>> GetAllPedidosAsync()
+    {
+        return await _pedidoRepository.GetAllAsync();
+    }
+}
+
