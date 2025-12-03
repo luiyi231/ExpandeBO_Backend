@@ -8,4 +8,3 @@ public class UpdateRepartidorRequest
     public string? RutaGeometry { get; set; } // Polyline codificado
     public int? DuracionRutaSegundos { get; set; }
 }
-
