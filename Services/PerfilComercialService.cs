@@ -40,6 +40,16 @@ public class PerfilComercialService : IPerfilComercialService
             throw new InvalidOperationException($"Has alcanzado el límite de perfiles comerciales permitidos por tu plan ({plan.MaxPerfilesComerciales})");
         }
 
+        // Validar que no se repita la ciudad
+        if (!string.IsNullOrEmpty(perfil.CiudadId))
+        {
+            var perfilConMismaCiudad = perfilesExistentes.FirstOrDefault(p => p.CiudadId == perfil.CiudadId);
+            if (perfilConMismaCiudad != null)
+            {
+                throw new InvalidOperationException($"Ya tienes un perfil comercial en esta ciudad. No puedes tener múltiples perfiles en la misma ciudad.");
+            }
+        }
+
         perfil.EmpresaId = empresaId;
         perfil.FechaCreacion = DateTime.UtcNow;
 
@@ -57,6 +67,17 @@ public class PerfilComercialService : IPerfilComercialService
         if (perfilExistente.EmpresaId != empresaId)
         {
             throw new UnauthorizedAccessException("No tienes permiso para actualizar este perfil comercial");
+        }
+
+        // Validar que no se repita la ciudad (excepto si es el mismo perfil)
+        if (!string.IsNullOrEmpty(perfil.CiudadId))
+        {
+            var perfilesExistentes = await _perfilComercialRepository.GetByEmpresaIdAsync(empresaId);
+            var perfilConMismaCiudad = perfilesExistentes.FirstOrDefault(p => p.CiudadId == perfil.CiudadId && p.Id != perfilId);
+            if (perfilConMismaCiudad != null)
+            {
+                throw new InvalidOperationException($"Ya tienes un perfil comercial en esta ciudad. No puedes tener múltiples perfiles en la misma ciudad.");
+            }
         }
 
         perfil.Id = perfilId;
