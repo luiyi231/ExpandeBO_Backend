@@ -82,6 +82,26 @@ public class ProductoService : IProductoService
     {
         return await _productoRepository.GetDisponiblesAsync();
     }
+
+    public async Task<List<Producto>> GetProductosByCiudadAsync(string ciudadId)
+    {
+        // Obtener todos los perfiles comerciales activos de la ciudad
+        var perfiles = await _perfilComercialRepository.GetByCiudadIdAsync(ciudadId);
+        
+        if (perfiles == null || perfiles.Count == 0)
+        {
+            return new List<Producto>();
+        }
+
+        // Obtener los IDs de los perfiles
+        var perfilesIds = perfiles.Select(p => p.Id!).ToList();
+
+        // Obtener productos de esos perfiles que estén disponibles
+        var productos = await _productoRepository.GetByPerfilesComercialesAsync(perfilesIds);
+        
+        // Filtrar solo los disponibles
+        return productos.Where(p => p.Disponible && p.Stock > 0).ToList();
+    }
 }
 
 

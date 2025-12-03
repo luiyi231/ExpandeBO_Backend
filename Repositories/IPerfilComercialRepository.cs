@@ -6,6 +6,7 @@ public interface IPerfilComercialRepository
 {
     Task<PerfilComercial?> GetByIdAsync(string id);
     Task<List<PerfilComercial>> GetByEmpresaIdAsync(string empresaId);
+    Task<List<PerfilComercial>> GetByCiudadIdAsync(string ciudadId);
     Task<PerfilComercial> CreateAsync(PerfilComercial perfil);
     Task<PerfilComercial> UpdateAsync(PerfilComercial perfil);
     Task<bool> DeleteAsync(string id);

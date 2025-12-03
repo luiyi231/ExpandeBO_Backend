@@ -11,6 +11,7 @@ public interface IProductoService
     Task<List<Producto>> GetProductosByPerfilAsync(string perfilComercialId);
     Task<List<Producto>> GetProductosByCategoriaAsync(string categoriaId);
     Task<List<Producto>> GetProductosDisponiblesAsync();
+    Task<List<Producto>> GetProductosByCiudadAsync(string ciudadId);
 }
 
 

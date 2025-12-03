@@ -60,6 +60,12 @@ public class ProductoRepository : IProductoRepository
     {
         return await _productos.Find(p => p.Disponible && p.Stock > 0).ToListAsync();
     }
+
+    public async Task<List<Producto>> GetByPerfilesComercialesAsync(List<string> perfilesComercialesIds)
+    {
+        var filter = Builders<Producto>.Filter.In(p => p.PerfilComercialId, perfilesComercialesIds);
+        return await _productos.Find(filter).ToListAsync();
+    }
 }
 
 

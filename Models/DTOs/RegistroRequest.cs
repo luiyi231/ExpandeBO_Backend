@@ -8,6 +8,8 @@ public class RegistroRequest
     public string Apellido { get; set; } = string.Empty;
     public string? Telefono { get; set; }
     public string Rol { get; set; } = "Cliente"; // Cliente, Empresa, Administrador
+    public string? CiudadId { get; set; } // Requerido si Rol es "Cliente"
+    public string? Direccion { get; set; } // Opcional para clientes
 }
 
 

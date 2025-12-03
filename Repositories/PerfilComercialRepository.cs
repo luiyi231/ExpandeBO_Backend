@@ -22,6 +22,11 @@ public class PerfilComercialRepository : IPerfilComercialRepository
         return await _perfiles.Find(p => p.EmpresaId == empresaId).ToListAsync();
     }
 
+    public async Task<List<PerfilComercial>> GetByCiudadIdAsync(string ciudadId)
+    {
+        return await _perfiles.Find(p => p.CiudadId == ciudadId && p.Activo).ToListAsync();
+    }
+
     public async Task<PerfilComercial> CreateAsync(PerfilComercial perfil)
     {
         await _perfiles.InsertOneAsync(perfil);

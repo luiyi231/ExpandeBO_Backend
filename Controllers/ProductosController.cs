@@ -14,15 +14,18 @@ public class ProductosController : ControllerBase
     private readonly IProductoService _productoService;
     private readonly IEmpresaRepository _empresaRepository;
     private readonly IPerfilComercialService _perfilComercialService;
+    private readonly IClienteService _clienteService;
 
     public ProductosController(
         IProductoService productoService,
         IEmpresaRepository empresaRepository,
-        IPerfilComercialService perfilComercialService)
+        IPerfilComercialService perfilComercialService,
+        IClienteService clienteService)
     {
         _productoService = productoService;
         _empresaRepository = empresaRepository;
         _perfilComercialService = perfilComercialService;
+        _clienteService = clienteService;
     }
 
     [HttpGet("perfil/{idPerfil}")]
@@ -46,7 +49,27 @@ public class ProductosController : ControllerBase
     {
         try
         {
-            var productos = await _productoService.GetProductosByCategoriaAsync(categoriaId);
+            // Si el usuario está autenticado y es Cliente, filtrar por su ciudad
+            var usuarioId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var rol = User.FindFirst("Rol")?.Value;
+
+            List<Producto> productos;
+
+            if (!string.IsNullOrEmpty(usuarioId) && rol == "Cliente")
+            {
+                var cliente = await _clienteService.GetClienteByUsuarioIdAsync(usuarioId);
+                if (cliente != null && !string.IsNullOrEmpty(cliente.CiudadId))
+                {
+                    // Obtener productos de la ciudad del cliente
+                    var productosPorCiudad = await _productoService.GetProductosByCiudadAsync(cliente.CiudadId);
+                    // Filtrar por categoría
+                    productos = productosPorCiudad.Where(p => p.CategoriaId == categoriaId).ToList();
+                    return Ok(productos);
+                }
+            }
+
+            // Si no es cliente o no tiene ciudad asignada, devolver todos los productos de la categoría
+            productos = await _productoService.GetProductosByCategoriaAsync(categoriaId);
             return Ok(productos);
         }
         catch (Exception ex)
@@ -61,8 +84,24 @@ public class ProductosController : ControllerBase
     {
         try
         {
-            var productos = await _productoService.GetProductosDisponiblesAsync();
-            return Ok(productos);
+            // Si el usuario está autenticado y es Cliente, filtrar por su ciudad
+            var usuarioId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var rol = User.FindFirst("Rol")?.Value;
+
+            if (!string.IsNullOrEmpty(usuarioId) && rol == "Cliente")
+            {
+                var cliente = await _clienteService.GetClienteByUsuarioIdAsync(usuarioId);
+                if (cliente != null && !string.IsNullOrEmpty(cliente.CiudadId))
+                {
+                    // Filtrar productos por ciudad del cliente
+                    var productos = await _productoService.GetProductosByCiudadAsync(cliente.CiudadId);
+                    return Ok(productos);
+                }
+            }
+
+            // Si no es cliente o no tiene ciudad asignada, devolver todos los productos disponibles
+            var todosProductos = await _productoService.GetProductosDisponiblesAsync();
+            return Ok(todosProductos);
         }
         catch (Exception ex)
         {

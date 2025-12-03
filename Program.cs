@@ -19,6 +19,7 @@ builder.Services.AddScoped<IEmpresaRepository, EmpresaRepository>();
 builder.Services.AddScoped<IPlanRepository, PlanRepository>();
 builder.Services.AddScoped<ISuscripcionEmpresaRepository, SuscripcionEmpresaRepository>();
 builder.Services.AddScoped<ICiudadRepository, CiudadRepository>();
+builder.Services.AddScoped<IClienteRepository, ClienteRepository>();
 builder.Services.AddScoped<IPerfilComercialRepository, PerfilComercialRepository>();
 builder.Services.AddScoped<ICategoriaRepository, CategoriaRepository>();
 builder.Services.AddScoped<ISubcategoriaRepository, SubcategoriaRepository>();
@@ -29,6 +30,7 @@ builder.Services.AddScoped<IChatRepository, ChatRepository>();
 
 // Servicios
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IClienteService, ClienteService>();
 builder.Services.AddScoped<IProductoService, ProductoService>();
 builder.Services.AddScoped<IPedidoService, PedidoService>();
 builder.Services.AddScoped<IChatService, ChatService>();

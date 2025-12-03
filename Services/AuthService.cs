@@ -14,15 +14,18 @@ public class AuthService : IAuthService
 {
     private readonly IUsuarioRepository _usuarioRepository;
     private readonly IEmpresaRepository _empresaRepository;
+    private readonly IClienteService _clienteService;
     private readonly IConfiguration _configuration;
 
     public AuthService(
         IUsuarioRepository usuarioRepository,
         IEmpresaRepository empresaRepository,
+        IClienteService clienteService,
         IConfiguration configuration)
     {
         _usuarioRepository = usuarioRepository;
         _empresaRepository = empresaRepository;
+        _clienteService = clienteService;
         _configuration = configuration;
     }
 
@@ -68,6 +71,12 @@ public class AuthService : IAuthService
             throw new InvalidOperationException("El email ya está registrado");
         }
 
+        // Validar que si es Cliente, tenga CiudadId
+        if (request.Rol == "Cliente" && string.IsNullOrEmpty(request.CiudadId))
+        {
+            throw new InvalidOperationException("La ciudad es requerida para clientes");
+        }
+
         var passwordHash = BCrypt.Net.BCrypt.HashPassword(request.Password);
 
         var usuario = new Usuario
@@ -83,6 +92,21 @@ public class AuthService : IAuthService
         };
 
         usuario = await _usuarioRepository.CreateAsync(usuario);
+
+        // Si es Cliente, crear el perfil de cliente
+        if (request.Rol == "Cliente" && !string.IsNullOrEmpty(request.CiudadId))
+        {
+            try
+            {
+                await _clienteService.CreateClienteAsync(usuario.Id!, request.CiudadId, request.Direccion);
+            }
+            catch (Exception ex)
+            {
+                // Si falla la creación del cliente, eliminar el usuario creado
+                await _usuarioRepository.DeleteAsync(usuario.Id!);
+                throw new InvalidOperationException($"Error al crear perfil de cliente: {ex.Message}");
+            }
+        }
 
         var token = GenerateJwtToken(usuario.Id!, usuario.Email, usuario.Rol);
 
