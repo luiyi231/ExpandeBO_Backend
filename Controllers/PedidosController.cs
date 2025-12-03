@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ExpandeBO_Backend.Models;
+using ExpandeBO_Backend.Models.DTOs;
 using ExpandeBO_Backend.Services;
 using ExpandeBO_Backend.Repositories;
 using System.Security.Claims;
@@ -181,7 +182,7 @@ public class PedidosController : ControllerBase
     }
 
     [HttpPut("{id}/estado")]
-    [Authorize(Policy = "EmpresaOrAdmin")]
+    [Authorize(Policy = "ClienteOrEmpresaOrAdmin")]
     public async Task<ActionResult<Pedido>> UpdateEstado(string id, [FromBody] UpdateEstadoRequest request)
     {
         try
@@ -189,19 +190,46 @@ public class PedidosController : ControllerBase
             var usuarioId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             var rol = User.FindFirst("Rol")?.Value;
 
-            string? empresaId = null;
-            if (rol == "Empresa")
+            // Obtener el pedido para validar permisos
+            var pedido = await _pedidoService.GetPedidoByIdAsync(id);
+            if (pedido == null)
+            {
+                return NotFound(new { message = "Pedido no encontrado" });
+            }
+
+            // Validar permisos según el rol
+            if (rol == "Cliente")
+            {
+                // Los clientes solo pueden actualizar sus propios pedidos
+                if (pedido.ClienteId != usuarioId)
+                {
+                    return Forbid("No tienes permiso para actualizar este pedido");
+                }
+            }
+            else if (rol == "Empresa")
             {
                 var empresa = await _empresaRepository.GetByUsuarioIdAsync(usuarioId!);
                 if (empresa == null)
                 {
                     return NotFound(new { message = "Empresa no encontrada" });
                 }
-                empresaId = empresa.Id;
+
+                var perfil = await _perfilComercialService.GetPerfilByIdAsync(pedido.PerfilComercialId);
+                if (perfil == null || perfil.EmpresaId != empresa.Id)
+                {
+                    return Forbid("No tienes permiso para actualizar este pedido");
+                }
             }
 
-            var pedido = await _pedidoService.UpdatePedidoEstadoAsync(id, request.Estado, empresaId);
-            return Ok(pedido);
+            string? empresaId = null;
+            if (rol == "Empresa")
+            {
+                var empresa = await _empresaRepository.GetByUsuarioIdAsync(usuarioId!);
+                empresaId = empresa?.Id;
+            }
+
+            var pedidoActualizado = await _pedidoService.UpdatePedidoEstadoAsync(id, request.Estado, empresaId);
+            return Ok(pedidoActualizado);
         }
         catch (KeyNotFoundException ex)
         {
@@ -214,6 +242,70 @@ public class PedidosController : ControllerBase
         catch (ArgumentException ex)
         {
             return BadRequest(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { message = "Error interno del servidor", error = ex.Message });
+        }
+    }
+
+    [HttpPut("{id}/repartidor")]
+    [Authorize(Policy = "ClienteOrEmpresaOrAdmin")]
+    public async Task<ActionResult<Pedido>> UpdateRepartidorPosicion(string id, [FromBody] UpdateRepartidorRequest request)
+    {
+        try
+        {
+            var usuarioId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var rol = User.FindFirst("Rol")?.Value;
+
+            // Obtener el pedido para validar permisos
+            var pedido = await _pedidoService.GetPedidoByIdAsync(id);
+            if (pedido == null)
+            {
+                return NotFound(new { message = "Pedido no encontrado" });
+            }
+
+            // Validar permisos según el rol
+            if (rol == "Cliente")
+            {
+                // Los clientes solo pueden actualizar sus propios pedidos
+                if (pedido.ClienteId != usuarioId)
+                {
+                    return Forbid("No tienes permiso para actualizar este pedido");
+                }
+            }
+            else if (rol == "Empresa")
+            {
+                var empresa = await _empresaRepository.GetByUsuarioIdAsync(usuarioId!);
+                if (empresa == null)
+                {
+                    return NotFound(new { message = "Empresa no encontrada" });
+                }
+
+                var perfil = await _perfilComercialService.GetPerfilByIdAsync(pedido.PerfilComercialId);
+                if (perfil == null || perfil.EmpresaId != empresa.Id)
+                {
+                    return Forbid("No tienes permiso para actualizar este pedido");
+                }
+            }
+
+            var pedidoActualizado = await _pedidoService.UpdateRepartidorPosicionAsync(
+                id,
+                request.Latitud,
+                request.Longitud,
+                request.ProgresoRuta,
+                request.RutaGeometry,
+                request.DuracionRutaSegundos);
+
+            return Ok(pedidoActualizado);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { message = ex.Message });
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return Forbid(ex.Message);
         }
         catch (Exception ex)
         {

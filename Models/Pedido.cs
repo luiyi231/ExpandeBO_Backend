@@ -46,6 +46,25 @@ public class Pedido
 
     [BsonElement("fechaActualizacion")]
     public DateTime? FechaActualizacion { get; set; }
+
+    // Campos para tracking de ruta
+    [BsonElement("rutaGeometry")]
+    public string? RutaGeometry { get; set; } // Polyline codificado de la ruta completa
+
+    [BsonElement("latitudRepartidor")]
+    public double? LatitudRepartidor { get; set; } // Última latitud del repartidor
+
+    [BsonElement("longitudRepartidor")]
+    public double? LongitudRepartidor { get; set; } // Última longitud del repartidor
+
+    [BsonElement("progresoRuta")]
+    public double? ProgresoRuta { get; set; } // Progreso de la ruta (0.0 a 1.0)
+
+    [BsonElement("fechaInicioRuta")]
+    public DateTime? FechaInicioRuta { get; set; } // Cuando empezó la ruta
+
+    [BsonElement("duracionRutaSegundos")]
+    public int? DuracionRutaSegundos { get; set; } // Duración estimada de la ruta en segundos
 }
 
 public class PedidoItem

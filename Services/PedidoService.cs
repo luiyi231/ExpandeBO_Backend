@@ -126,5 +126,51 @@ public class PedidoService : IPedidoService
     {
         return await _pedidoRepository.GetAllAsync();
     }
+
+    public async Task<Pedido> UpdateRepartidorPosicionAsync(
+        string pedidoId,
+        double? latitud,
+        double? longitud,
+        double? progresoRuta,
+        string? rutaGeometry = null,
+        int? duracionRutaSegundos = null)
+    {
+        var pedido = await _pedidoRepository.GetByIdAsync(pedidoId);
+        if (pedido == null)
+        {
+            throw new KeyNotFoundException("Pedido no encontrado");
+        }
+
+        // Actualizar posición del repartidor
+        if (latitud.HasValue)
+        {
+            pedido.LatitudRepartidor = latitud.Value;
+        }
+        if (longitud.HasValue)
+        {
+            pedido.LongitudRepartidor = longitud.Value;
+        }
+        if (progresoRuta.HasValue)
+        {
+            pedido.ProgresoRuta = progresoRuta.Value;
+        }
+        if (!string.IsNullOrEmpty(rutaGeometry))
+        {
+            pedido.RutaGeometry = rutaGeometry;
+            // Si es la primera vez que se guarda la ruta, guardar también la fecha de inicio
+            if (!pedido.FechaInicioRuta.HasValue)
+            {
+                pedido.FechaInicioRuta = DateTime.UtcNow;
+            }
+        }
+        if (duracionRutaSegundos.HasValue)
+        {
+            pedido.DuracionRutaSegundos = duracionRutaSegundos.Value;
+        }
+
+        pedido.FechaActualizacion = DateTime.UtcNow;
+
+        return await _pedidoRepository.UpdateAsync(pedido);
+    }
 }
 
