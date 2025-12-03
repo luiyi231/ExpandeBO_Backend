@@ -69,6 +69,19 @@ public class PerfilesController : ControllerBase
                 return NotFound(new { message = "Perfil comercial no encontrado" });
             }
 
+            // Validar que las empresas solo vean sus propios perfiles
+            var usuarioId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var rol = User.FindFirst("Rol")?.Value;
+
+            if (rol == "Empresa")
+            {
+                var empresa = await _empresaRepository.GetByUsuarioIdAsync(usuarioId!);
+                if (empresa == null || empresa.Id != perfil.EmpresaId)
+                {
+                    return Forbid("No tienes permiso para ver este perfil comercial");
+                }
+            }
+
             return Ok(perfil);
         }
         catch (Exception ex)
