@@ -109,6 +109,62 @@ public class ProductosController : ControllerBase
         }
     }
 
+    [HttpGet("todos")]
+    [Authorize(Policy = "AdminOnly")]
+    public async Task<ActionResult<List<object>>> GetTodosLosProductos()
+    {
+        try
+        {
+            var productos = await _productoService.GetTodosLosProductosAsync();
+            var resultado = new List<object>();
+
+            foreach (var producto in productos)
+            {
+                var perfil = await _perfilComercialService.GetPerfilByIdAsync(producto.PerfilComercialId);
+                if (perfil == null) continue;
+
+                var empresa = await _empresaRepository.GetByIdAsync(perfil.EmpresaId);
+                if (empresa == null) continue;
+
+                resultado.Add(new
+                {
+                    id = producto.Id,
+                    nombre = producto.Nombre,
+                    descripcion = producto.Descripcion,
+                    precio = producto.Precio,
+                    stock = producto.Stock,
+                    disponible = producto.Disponible,
+                    imagenUrl = producto.ImagenUrl,
+                    categoriaId = producto.CategoriaId,
+                    subcategoriaId = producto.SubcategoriaId,
+                    perfilComercialId = producto.PerfilComercialId,
+                    fechaCreacion = producto.FechaCreacion,
+                    fechaUltimaActualizacion = producto.FechaUltimaActualizacion,
+                    empresa = new
+                    {
+                        id = empresa.Id,
+                        razonSocial = empresa.RazonSocial,
+                        nit = empresa.NIT,
+                        email = empresa.Email
+                    },
+                    perfilComercial = new
+                    {
+                        id = perfil.Id,
+                        nombre = perfil.Nombre,
+                        direccion = perfil.Direccion,
+                        ciudadId = perfil.CiudadId
+                    }
+                });
+            }
+
+            return Ok(resultado);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { message = "Error interno del servidor", error = ex.Message });
+        }
+    }
+
     [HttpGet("{id}")]
     [AllowAnonymous]
     public async Task<ActionResult<Producto>> GetProducto(string id)

@@ -142,6 +142,11 @@ public class ProductoService : IProductoService
         // Filtrar solo los disponibles
         return productos.Where(p => p.Disponible && p.Stock > 0).ToList();
     }
+
+    public async Task<List<Producto>> GetTodosLosProductosAsync()
+    {
+        return await _productoRepository.GetAllAsync();
+    }
 }
 
 
