@@ -57,6 +57,16 @@ public class CategoriasController : ControllerBase
     {
         try
         {
+            // Validar nombre
+            if (string.IsNullOrWhiteSpace(categoria.Nombre))
+            {
+                return BadRequest(new { message = "El nombre de la categoría es requerido" });
+            }
+            if (categoria.Nombre.Length > 100)
+            {
+                return BadRequest(new { message = "El nombre de la categoría no puede exceder 100 caracteres" });
+            }
+
             categoria.FechaCreacion = DateTime.UtcNow;
             var nuevaCategoria = await _categoriaRepository.CreateAsync(categoria);
             return CreatedAtAction(nameof(GetCategoria), new { id = nuevaCategoria.Id }, nuevaCategoria);
@@ -77,6 +87,16 @@ public class CategoriasController : ControllerBase
             if (categoriaExistente == null)
             {
                 return NotFound(new { message = "Categoría no encontrada" });
+            }
+
+            // Validar nombre
+            if (string.IsNullOrWhiteSpace(categoria.Nombre))
+            {
+                return BadRequest(new { message = "El nombre de la categoría es requerido" });
+            }
+            if (categoria.Nombre.Length > 100)
+            {
+                return BadRequest(new { message = "El nombre de la categoría no puede exceder 100 caracteres" });
             }
 
             categoria.Id = id;

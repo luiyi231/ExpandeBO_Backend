@@ -65,6 +65,22 @@ public class AuthService : IAuthService
 
     public async Task<AuthResponse> RegistroAsync(RegistroRequest request)
     {
+        // Validar email
+        if (!ValidarEmail(request.Email))
+        {
+            throw new ArgumentException("Email inválido. Use solo letras, números y los símbolos . - _ antes del @");
+        }
+
+        // Validar nombre y apellido
+        if (!ValidarNombreApellido(request.Nombre))
+        {
+            throw new ArgumentException("El nombre solo puede contener letras y espacios, máximo 50 caracteres");
+        }
+        if (!ValidarNombreApellido(request.Apellido))
+        {
+            throw new ArgumentException("El apellido solo puede contener letras y espacios, máximo 50 caracteres");
+        }
+
         var usuarioExistente = await _usuarioRepository.GetByEmailAsync(request.Email);
         if (usuarioExistente != null)
         {
@@ -122,6 +138,32 @@ public class AuthService : IAuthService
 
     public async Task<AuthResponse> RegistroEmpresaAsync(RegistroEmpresaRequest request)
     {
+        // Validar email
+        if (!ValidarEmail(request.Email))
+        {
+            throw new ArgumentException("Email inválido. Use solo letras, números y los símbolos . - _ antes del @");
+        }
+
+        // Validar nombre y apellido
+        if (!ValidarNombreApellido(request.Nombre))
+        {
+            throw new ArgumentException("El nombre solo puede contener letras y espacios, máximo 50 caracteres");
+        }
+        if (!ValidarNombreApellido(request.Apellido))
+        {
+            throw new ArgumentException("El apellido solo puede contener letras y espacios, máximo 50 caracteres");
+        }
+
+        // Validar razón social
+        if (string.IsNullOrWhiteSpace(request.RazonSocial))
+        {
+            throw new ArgumentException("La razón social es requerida");
+        }
+        if (request.RazonSocial.Length > 100)
+        {
+            throw new ArgumentException("La razón social no puede exceder 100 caracteres");
+        }
+
         var usuarioExistente = await _usuarioRepository.GetByEmailAsync(request.Email);
         if (usuarioExistente != null)
         {
@@ -198,6 +240,106 @@ public class AuthService : IAuthService
         );
 
         return new JwtSecurityTokenHandler().WriteToken(token);
+    }
+
+    /// <summary>
+    /// Valida un email según las reglas:
+    /// - Antes del @: solo caracteres alfanuméricos y los símbolos . - _
+    /// - Los símbolos . - _ no pueden estar inmediatamente antes del @
+    /// - Después del @ debe haber al menos un punto (como .com)
+    /// </summary>
+    private bool ValidarEmail(string email)
+    {
+        if (string.IsNullOrWhiteSpace(email))
+        {
+            return false;
+        }
+
+        // Verificar que tenga exactamente un @
+        int arrobaIndex = email.IndexOf('@');
+        if (arrobaIndex == -1 || email.IndexOf('@', arrobaIndex + 1) != -1)
+        {
+            return false;
+        }
+
+        // Validar parte antes del @
+        string parteLocal = email.Substring(0, arrobaIndex);
+        if (string.IsNullOrEmpty(parteLocal))
+        {
+            return false;
+        }
+
+        // Verificar que no empiece ni termine con . - _
+        if (parteLocal.StartsWith(".") || parteLocal.StartsWith("-") || parteLocal.StartsWith("_") ||
+            parteLocal.EndsWith(".") || parteLocal.EndsWith("-") || parteLocal.EndsWith("_"))
+        {
+            return false;
+        }
+
+        // Verificar que solo contenga caracteres alfanuméricos y . - _
+        foreach (char c in parteLocal)
+        {
+            if (!char.IsLetterOrDigit(c) && c != '.' && c != '-' && c != '_')
+            {
+                return false;
+            }
+        }
+
+        // Validar parte después del @
+        string parteDominio = email.Substring(arrobaIndex + 1);
+        if (string.IsNullOrEmpty(parteDominio))
+        {
+            return false;
+        }
+
+        // Verificar que tenga al menos un punto
+        if (!parteDominio.Contains('.'))
+        {
+            return false;
+        }
+
+        // Verificar que el dominio tenga al menos un carácter antes del punto
+        int puntoIndex = parteDominio.IndexOf('.');
+        if (puntoIndex == 0)
+        {
+            return false;
+        }
+
+        // Verificar que después del último punto haya al menos un carácter
+        int ultimoPuntoIndex = parteDominio.LastIndexOf('.');
+        if (ultimoPuntoIndex == parteDominio.Length - 1)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    /// <summary>
+    /// Valida que el nombre o apellido solo contenga letras y espacios, máximo 50 caracteres
+    /// </summary>
+    private bool ValidarNombreApellido(string nombre)
+    {
+        if (string.IsNullOrWhiteSpace(nombre))
+        {
+            return false;
+        }
+
+        if (nombre.Length > 50)
+        {
+            return false;
+        }
+
+        // Solo letras y espacios (permite acentos y caracteres especiales de otros idiomas)
+        foreach (char c in nombre)
+        {
+            if (!char.IsLetter(c) && c != ' ' && c != '-')
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 }
 

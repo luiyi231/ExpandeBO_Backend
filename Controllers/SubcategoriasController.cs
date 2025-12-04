@@ -66,6 +66,16 @@ public class SubcategoriasController : ControllerBase
     {
         try
         {
+            // Validar nombre
+            if (string.IsNullOrWhiteSpace(subcategoria.Nombre))
+            {
+                return BadRequest(new { message = "El nombre de la subcategoría es requerido" });
+            }
+            if (subcategoria.Nombre.Length > 100)
+            {
+                return BadRequest(new { message = "El nombre de la subcategoría no puede exceder 100 caracteres" });
+            }
+
             subcategoria.FechaCreacion = DateTime.UtcNow;
             var nuevaSubcategoria = await _subcategoriaRepository.CreateAsync(subcategoria);
             return CreatedAtAction(nameof(GetSubcategoria), new { id = nuevaSubcategoria.Id }, nuevaSubcategoria);
@@ -86,6 +96,16 @@ public class SubcategoriasController : ControllerBase
             if (subcategoriaExistente == null)
             {
                 return NotFound(new { message = "Subcategoría no encontrada" });
+            }
+
+            // Validar nombre
+            if (string.IsNullOrWhiteSpace(subcategoria.Nombre))
+            {
+                return BadRequest(new { message = "El nombre de la subcategoría es requerido" });
+            }
+            if (subcategoria.Nombre.Length > 100)
+            {
+                return BadRequest(new { message = "El nombre de la subcategoría no puede exceder 100 caracteres" });
             }
 
             subcategoria.Id = id;

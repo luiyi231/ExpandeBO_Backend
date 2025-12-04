@@ -21,6 +21,16 @@ public class PerfilComercialService : IPerfilComercialService
 
     public async Task<PerfilComercial> CreatePerfilAsync(PerfilComercial perfil, string empresaId)
     {
+        // Validar nombre del perfil
+        if (string.IsNullOrWhiteSpace(perfil.Nombre))
+        {
+            throw new ArgumentException("El nombre del perfil comercial es requerido");
+        }
+        if (perfil.Nombre.Length > 100)
+        {
+            throw new ArgumentException("El nombre del perfil comercial no puede exceder 100 caracteres");
+        }
+
         // Validar límite de perfiles según el plan
         var suscripcion = await _suscripcionEmpresaRepository.GetActivaByEmpresaIdAsync(empresaId);
         if (suscripcion == null)
@@ -67,6 +77,16 @@ public class PerfilComercialService : IPerfilComercialService
         if (perfilExistente.EmpresaId != empresaId)
         {
             throw new UnauthorizedAccessException("No tienes permiso para actualizar este perfil comercial");
+        }
+
+        // Validar nombre del perfil
+        if (string.IsNullOrWhiteSpace(perfil.Nombre))
+        {
+            throw new ArgumentException("El nombre del perfil comercial es requerido");
+        }
+        if (perfil.Nombre.Length > 100)
+        {
+            throw new ArgumentException("El nombre del perfil comercial no puede exceder 100 caracteres");
         }
 
         // Validar que no se repita la ciudad (excepto si es el mismo perfil)

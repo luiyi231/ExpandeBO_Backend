@@ -19,6 +19,9 @@ public class Subcategoria
     [BsonElement("descripcion")]
     public string? Descripcion { get; set; }
 
+    [BsonElement("imagenUrl")]
+    public string? ImagenUrl { get; set; }
+
     [BsonElement("activa")]
     public bool Activa { get; set; } = true;
 

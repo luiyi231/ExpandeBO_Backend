@@ -24,6 +24,26 @@ public class ProductoService : IProductoService
             throw new UnauthorizedAccessException("No tienes permiso para crear productos en este perfil comercial");
         }
 
+        // Validar precio
+        if (producto.Precio <= 0)
+        {
+            throw new ArgumentException("El precio debe ser mayor a 0");
+        }
+        if (producto.Precio > 999999)
+        {
+            throw new ArgumentException("El precio no puede ser mayor a 999999");
+        }
+
+        // Validar stock
+        if (producto.Stock < 0)
+        {
+            throw new ArgumentException("El stock no puede ser negativo");
+        }
+        if (producto.Stock > 99999)
+        {
+            throw new ArgumentException("El stock no puede ser mayor a 99999");
+        }
+
         return await _productoRepository.CreateAsync(producto);
     }
 
@@ -39,6 +59,26 @@ public class ProductoService : IProductoService
         if (perfil == null || perfil.EmpresaId != empresaId)
         {
             throw new UnauthorizedAccessException("No tienes permiso para actualizar este producto");
+        }
+
+        // Validar precio
+        if (producto.Precio <= 0)
+        {
+            throw new ArgumentException("El precio debe ser mayor a 0");
+        }
+        if (producto.Precio > 999999)
+        {
+            throw new ArgumentException("El precio no puede ser mayor a 999999");
+        }
+
+        // Validar stock
+        if (producto.Stock < 0)
+        {
+            throw new ArgumentException("El stock no puede ser negativo");
+        }
+        if (producto.Stock > 99999)
+        {
+            throw new ArgumentException("El stock no puede ser mayor a 99999");
         }
 
         producto.Id = productoId;
