@@ -197,7 +197,7 @@ public class PedidosController : ControllerBase
                 return NotFound(new { message = "Pedido no encontrado" });
             }
 
-            // Validar permisos según el rol
+            // Validar permisos segï¿½n el rol
             if (rol == "Cliente")
             {
                 // Los clientes solo pueden actualizar sus propios pedidos
@@ -221,6 +221,12 @@ public class PedidosController : ControllerBase
                 }
             }
 
+            // Validar que no se puede cancelar un pedido entregado
+            if (request.Estado == "Cancelado" && pedido.Estado == "Entregado")
+            {
+                return BadRequest(new { message = "No se puede cancelar un pedido que ya ha sido entregado" });
+            }
+
             string? empresaId = null;
             if (rol == "Empresa")
             {
@@ -240,6 +246,10 @@ public class PedidosController : ControllerBase
             return Forbid(ex.Message);
         }
         catch (ArgumentException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+        catch (InvalidOperationException ex)
         {
             return BadRequest(new { message = ex.Message });
         }
@@ -265,7 +275,7 @@ public class PedidosController : ControllerBase
                 return NotFound(new { message = "Pedido no encontrado" });
             }
 
-            // Validar permisos según el rol
+            // Validar permisos segï¿½n el rol
             if (rol == "Cliente")
             {
                 // Los clientes solo pueden actualizar sus propios pedidos

@@ -117,12 +117,19 @@ public class PedidoService : IPedidoService
             throw new ArgumentException("Estado inválido");
         }
 
+        // Validar que no se puede cancelar un pedido entregado
+        if (nuevoEstado == "Cancelado" && pedido.Estado == "Entregado")
+        {
+            throw new InvalidOperationException("No se puede cancelar un pedido que ya ha sido entregado");
+        }
+
         var estadoAnterior = pedido.Estado;
         pedido.Estado = nuevoEstado;
         pedido.FechaActualizacion = DateTime.UtcNow;
 
         // Si se cancela el pedido y no estaba cancelado antes, restaurar el stock
-        if (nuevoEstado == "Cancelado" && estadoAnterior != "Cancelado" && pedido.Items != null)
+        // Solo se puede cancelar si el estado anterior era Pendiente, Confirmado, EnPreparacion o EnCamino
+        if (nuevoEstado == "Cancelado" && estadoAnterior != "Cancelado" && estadoAnterior != "Entregado" && pedido.Items != null)
         {
             foreach (var item in pedido.Items)
             {
