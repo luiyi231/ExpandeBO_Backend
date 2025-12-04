@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ExpandeBO_Backend.Models;
 using ExpandeBO_Backend.Repositories;
+using ExpandeBO_Backend.Services;
 
 namespace ExpandeBO_Backend.Controllers;
 
@@ -11,10 +12,14 @@ namespace ExpandeBO_Backend.Controllers;
 public class EmpresasController : ControllerBase
 {
     private readonly IEmpresaRepository _empresaRepository;
+    private readonly IEmpresaEliminacionService _empresaEliminacionService;
 
-    public EmpresasController(IEmpresaRepository empresaRepository)
+    public EmpresasController(
+        IEmpresaRepository empresaRepository,
+        IEmpresaEliminacionService empresaEliminacionService)
     {
         _empresaRepository = empresaRepository;
+        _empresaEliminacionService = empresaEliminacionService;
     }
 
     [HttpGet]
@@ -104,17 +109,17 @@ public class EmpresasController : ControllerBase
     {
         try
         {
-            var eliminada = await _empresaRepository.DeleteAsync(id);
+            var eliminada = await _empresaEliminacionService.EliminarEmpresaConRelacionesAsync(id);
             if (!eliminada)
             {
                 return NotFound(new { message = "Empresa no encontrada" });
             }
 
-            return NoContent();
+            return Ok(new { message = "Empresa y todas sus relaciones eliminadas exitosamente" });
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new { message = "Error interno del servidor", error = ex.Message });
+            return StatusCode(500, new { message = "Error interno del servidor al eliminar la empresa", error = ex.Message });
         }
     }
 }

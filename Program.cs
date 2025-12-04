@@ -35,6 +35,7 @@ builder.Services.AddScoped<IProductoService, ProductoService>();
 builder.Services.AddScoped<IPedidoService, PedidoService>();
 builder.Services.AddScoped<IChatService, ChatService>();
 builder.Services.AddScoped<IPerfilComercialService, PerfilComercialService>();
+builder.Services.AddScoped<IEmpresaEliminacionService, EmpresaEliminacionService>();
 
 // Controllers
 builder.Services.AddControllers();
