@@ -121,6 +121,45 @@ public class ClientesController : ControllerBase
             return StatusCode(500, new { message = "Error interno del servidor", error = ex.Message });
         }
     }
+
+    [HttpGet("todos")]
+    [Authorize(Policy = "AdminOnly")]
+    public async Task<ActionResult<List<Cliente>>> GetAllClientes()
+    {
+        try
+        {
+            var clientes = await _clienteService.GetAllClientesAsync();
+            return Ok(clientes);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { message = "Error interno del servidor", error = ex.Message });
+        }
+    }
+
+    [HttpDelete("{id}")]
+    [Authorize(Policy = "AdminOnly")]
+    public async Task<ActionResult> DeleteCliente(string id)
+    {
+        try
+        {
+            var eliminado = await _clienteService.DeleteClienteAsync(id);
+            if (!eliminado)
+            {
+                return NotFound(new { message = "Cliente no encontrado" });
+            }
+
+            return Ok(new { message = "Cliente eliminado exitosamente" });
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { message = "Error interno del servidor", error = ex.Message });
+        }
+    }
 }
 
 public class UpdateClienteRequest

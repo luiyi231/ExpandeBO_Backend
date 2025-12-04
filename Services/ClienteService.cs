@@ -92,5 +92,29 @@ public class ClienteService : IClienteService
     {
         return await _clienteRepository.GetByCiudadIdAsync(ciudadId);
     }
+
+    public async Task<bool> DeleteClienteAsync(string clienteId)
+    {
+        var cliente = await _clienteRepository.GetByIdAsync(clienteId);
+        if (cliente == null)
+        {
+            throw new KeyNotFoundException("Cliente no encontrado");
+        }
+
+        // Opcional: También podrías desactivar el usuario asociado
+        // var usuario = await _usuarioRepository.GetByIdAsync(cliente.UsuarioId);
+        // if (usuario != null)
+        // {
+        //     usuario.Activo = false;
+        //     await _usuarioRepository.UpdateAsync(usuario);
+        // }
+
+        return await _clienteRepository.DeleteAsync(clienteId);
+    }
+
+    public async Task<List<Cliente>> GetAllClientesAsync()
+    {
+        return await _clienteRepository.GetAllAsync();
+    }
 }
 

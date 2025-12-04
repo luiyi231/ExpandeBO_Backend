@@ -9,5 +9,7 @@ public interface IClienteService
     Task<Cliente?> GetClienteByIdAsync(string id);
     Task<Cliente> UpdateClienteAsync(string clienteId, string ciudadId, string? direccion = null);
     Task<List<Cliente>> GetClientesByCiudadAsync(string ciudadId);
+    Task<bool> DeleteClienteAsync(string clienteId);
+    Task<List<Cliente>> GetAllClientesAsync();
 }
 
