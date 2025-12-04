@@ -59,7 +59,7 @@ public class PedidoService : IPedidoService
         // Crear el pedido
         var pedidoCreado = await _pedidoRepository.CreateAsync(pedido);
 
-        // Crear registros en la tabla intermedia (muchos a muchos)
+        // Crear registros en la tabla intermedia (muchos a muchos) y actualizar stock
         foreach (var item in pedido.Items)
         {
             var pedidoProducto = new PedidoProducto
@@ -72,6 +72,22 @@ public class PedidoService : IPedidoService
                 FechaCreacion = DateTime.UtcNow
             };
             await _pedidoProductoRepository.CreateAsync(pedidoProducto);
+
+            // Actualizar stock del producto
+            var producto = await _productoRepository.GetByIdAsync(item.ProductoId);
+            if (producto != null)
+            {
+                producto.Stock -= item.Cantidad;
+
+                // Si el stock llega a 0 o menos, marcar como no disponible
+                if (producto.Stock <= 0)
+                {
+                    producto.Stock = 0;
+                    producto.Disponible = false;
+                }
+
+                await _productoRepository.UpdateAsync(producto);
+            }
         }
 
         return pedidoCreado;
@@ -101,8 +117,30 @@ public class PedidoService : IPedidoService
             throw new ArgumentException("Estado inválido");
         }
 
+        var estadoAnterior = pedido.Estado;
         pedido.Estado = nuevoEstado;
         pedido.FechaActualizacion = DateTime.UtcNow;
+
+        // Si se cancela el pedido y no estaba cancelado antes, restaurar el stock
+        if (nuevoEstado == "Cancelado" && estadoAnterior != "Cancelado" && pedido.Items != null)
+        {
+            foreach (var item in pedido.Items)
+            {
+                var producto = await _productoRepository.GetByIdAsync(item.ProductoId);
+                if (producto != null)
+                {
+                    producto.Stock += item.Cantidad;
+
+                    // Si el stock se restaura y era 0, marcar como disponible nuevamente
+                    if (producto.Stock > 0)
+                    {
+                        producto.Disponible = true;
+                    }
+
+                    await _productoRepository.UpdateAsync(producto);
+                }
+            }
+        }
 
         return await _pedidoRepository.UpdateAsync(pedido);
     }
