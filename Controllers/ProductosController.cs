@@ -111,15 +111,20 @@ public class ProductosController : ControllerBase
 
     [HttpGet("todos")]
     [Authorize(Policy = "AdminOnly")]
-    public async Task<ActionResult<object>> GetTodosLosProductos([FromQuery] int page = 1, [FromQuery] int pageSize = 20)
+    public async Task<ActionResult<object>> GetTodosLosProductos(
+        [FromQuery] int page = 1, 
+        [FromQuery] int pageSize = 20,
+        [FromQuery] string? ciudadId = null,
+        [FromQuery] string? categoriaId = null,
+        [FromQuery] string? subcategoriaId = null)
     {
         try
         {
             if (page < 1) page = 1;
             if (pageSize < 1 || pageSize > 100) pageSize = 20;
 
-            var productos = await _productoService.GetTodosLosProductosAsync(page, pageSize);
-            var totalProductos = await _productoService.GetTotalProductosAsync();
+            var productos = await _productoService.GetTodosLosProductosAsync(page, pageSize, ciudadId, categoriaId, subcategoriaId);
+            var totalProductos = await _productoService.GetTotalProductosAsync(ciudadId, categoriaId, subcategoriaId);
             var totalPages = (int)Math.Ceiling(totalProductos / (double)pageSize);
 
             var resultado = new List<object>();

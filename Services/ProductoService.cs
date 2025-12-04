@@ -157,6 +157,42 @@ public class ProductoService : IProductoService
     {
         return await _productoRepository.GetTotalCountAsync();
     }
+
+    public async Task<List<Producto>> GetTodosLosProductosAsync(int page, int pageSize, string? ciudadId, string? categoriaId, string? subcategoriaId)
+    {
+        List<string>? perfilesIds = null;
+
+        // Si hay filtro de ciudad, obtener los perfiles comerciales de esa ciudad
+        if (!string.IsNullOrEmpty(ciudadId))
+        {
+            var perfiles = await _perfilComercialRepository.GetByCiudadIdAsync(ciudadId);
+            if (perfiles == null || perfiles.Count == 0)
+            {
+                return new List<Producto>(); // No hay perfiles en esa ciudad
+            }
+            perfilesIds = perfiles.Select(p => p.Id!).ToList();
+        }
+
+        return await _productoRepository.GetPaginadosConFiltrosAsync(page, pageSize, perfilesIds, categoriaId, subcategoriaId);
+    }
+
+    public async Task<long> GetTotalProductosAsync(string? ciudadId, string? categoriaId, string? subcategoriaId)
+    {
+        List<string>? perfilesIds = null;
+
+        // Si hay filtro de ciudad, obtener los perfiles comerciales de esa ciudad
+        if (!string.IsNullOrEmpty(ciudadId))
+        {
+            var perfiles = await _perfilComercialRepository.GetByCiudadIdAsync(ciudadId);
+            if (perfiles == null || perfiles.Count == 0)
+            {
+                return 0; // No hay perfiles en esa ciudad
+            }
+            perfilesIds = perfiles.Select(p => p.Id!).ToList();
+        }
+
+        return await _productoRepository.GetTotalCountConFiltrosAsync(perfilesIds, categoriaId, subcategoriaId);
+    }
 }
 
 

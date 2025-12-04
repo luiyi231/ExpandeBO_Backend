@@ -16,6 +16,8 @@ public interface IProductoRepository
     Task<List<Producto>> GetDisponiblesAsync();
     Task<List<Producto>> GetPaginadosAsync(int page, int pageSize);
     Task<long> GetTotalCountAsync();
+    Task<List<Producto>> GetPaginadosConFiltrosAsync(int page, int pageSize, List<string>? perfilesIds, string? categoriaId, string? subcategoriaId);
+    Task<long> GetTotalCountConFiltrosAsync(List<string>? perfilesIds, string? categoriaId, string? subcategoriaId);
 }
 
 

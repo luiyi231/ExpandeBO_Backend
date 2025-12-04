@@ -15,6 +15,8 @@ public interface IProductoService
     Task<List<Producto>> GetTodosLosProductosAsync();
     Task<List<Producto>> GetTodosLosProductosAsync(int page, int pageSize);
     Task<long> GetTotalProductosAsync();
+    Task<List<Producto>> GetTodosLosProductosAsync(int page, int pageSize, string? ciudadId, string? categoriaId, string? subcategoriaId);
+    Task<long> GetTotalProductosAsync(string? ciudadId, string? categoriaId, string? subcategoriaId);
 }
 
 

@@ -81,6 +81,65 @@ public class ProductoRepository : IProductoRepository
     {
         return await _productos.CountDocumentsAsync(_ => true);
     }
+
+    public async Task<List<Producto>> GetPaginadosConFiltrosAsync(int page, int pageSize, List<string>? perfilesIds, string? categoriaId, string? subcategoriaId)
+    {
+        var skip = (page - 1) * pageSize;
+        var filterBuilder = Builders<Producto>.Filter;
+        var filters = new List<FilterDefinition<Producto>>();
+
+        if (perfilesIds != null && perfilesIds.Count > 0)
+        {
+            filters.Add(filterBuilder.In(p => p.PerfilComercialId, perfilesIds));
+        }
+
+        if (!string.IsNullOrEmpty(categoriaId))
+        {
+            filters.Add(filterBuilder.Eq(p => p.CategoriaId, categoriaId));
+        }
+
+        if (!string.IsNullOrEmpty(subcategoriaId))
+        {
+            filters.Add(filterBuilder.Eq(p => p.SubcategoriaId, subcategoriaId));
+        }
+
+        var combinedFilter = filters.Count > 0 
+            ? filterBuilder.And(filters) 
+            : filterBuilder.Empty;
+
+        return await _productos.Find(combinedFilter)
+            .SortByDescending(p => p.FechaCreacion)
+            .Skip(skip)
+            .Limit(pageSize)
+            .ToListAsync();
+    }
+
+    public async Task<long> GetTotalCountConFiltrosAsync(List<string>? perfilesIds, string? categoriaId, string? subcategoriaId)
+    {
+        var filterBuilder = Builders<Producto>.Filter;
+        var filters = new List<FilterDefinition<Producto>>();
+
+        if (perfilesIds != null && perfilesIds.Count > 0)
+        {
+            filters.Add(filterBuilder.In(p => p.PerfilComercialId, perfilesIds));
+        }
+
+        if (!string.IsNullOrEmpty(categoriaId))
+        {
+            filters.Add(filterBuilder.Eq(p => p.CategoriaId, categoriaId));
+        }
+
+        if (!string.IsNullOrEmpty(subcategoriaId))
+        {
+            filters.Add(filterBuilder.Eq(p => p.SubcategoriaId, subcategoriaId));
+        }
+
+        var combinedFilter = filters.Count > 0 
+            ? filterBuilder.And(filters) 
+            : filterBuilder.Empty;
+
+        return await _productos.CountDocumentsAsync(combinedFilter);
+    }
 }
 
 
