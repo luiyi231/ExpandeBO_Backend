@@ -13,6 +13,8 @@ public interface IProductoService
     Task<List<Producto>> GetProductosDisponiblesAsync();
     Task<List<Producto>> GetProductosByCiudadAsync(string ciudadId);
     Task<List<Producto>> GetTodosLosProductosAsync();
+    Task<List<Producto>> GetTodosLosProductosAsync(int page, int pageSize);
+    Task<long> GetTotalProductosAsync();
 }
 
 

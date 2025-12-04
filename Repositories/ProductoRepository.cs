@@ -66,6 +66,21 @@ public class ProductoRepository : IProductoRepository
         var filter = Builders<Producto>.Filter.In(p => p.PerfilComercialId, perfilesComercialesIds);
         return await _productos.Find(filter).ToListAsync();
     }
+
+    public async Task<List<Producto>> GetPaginadosAsync(int page, int pageSize)
+    {
+        var skip = (page - 1) * pageSize;
+        return await _productos.Find(_ => true)
+            .SortByDescending(p => p.FechaCreacion)
+            .Skip(skip)
+            .Limit(pageSize)
+            .ToListAsync();
+    }
+
+    public async Task<long> GetTotalCountAsync()
+    {
+        return await _productos.CountDocumentsAsync(_ => true);
+    }
 }
 
 

@@ -147,6 +147,16 @@ public class ProductoService : IProductoService
     {
         return await _productoRepository.GetAllAsync();
     }
+
+    public async Task<List<Producto>> GetTodosLosProductosAsync(int page, int pageSize)
+    {
+        return await _productoRepository.GetPaginadosAsync(page, pageSize);
+    }
+
+    public async Task<long> GetTotalProductosAsync()
+    {
+        return await _productoRepository.GetTotalCountAsync();
+    }
 }
 
 

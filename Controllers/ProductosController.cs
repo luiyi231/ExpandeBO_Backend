@@ -111,11 +111,17 @@ public class ProductosController : ControllerBase
 
     [HttpGet("todos")]
     [Authorize(Policy = "AdminOnly")]
-    public async Task<ActionResult<List<object>>> GetTodosLosProductos()
+    public async Task<ActionResult<object>> GetTodosLosProductos([FromQuery] int page = 1, [FromQuery] int pageSize = 20)
     {
         try
         {
-            var productos = await _productoService.GetTodosLosProductosAsync();
+            if (page < 1) page = 1;
+            if (pageSize < 1 || pageSize > 100) pageSize = 20;
+
+            var productos = await _productoService.GetTodosLosProductosAsync(page, pageSize);
+            var totalProductos = await _productoService.GetTotalProductosAsync();
+            var totalPages = (int)Math.Ceiling(totalProductos / (double)pageSize);
+
             var resultado = new List<object>();
 
             foreach (var producto in productos)
@@ -157,7 +163,19 @@ public class ProductosController : ControllerBase
                 });
             }
 
-            return Ok(resultado);
+            return Ok(new
+            {
+                productos = resultado,
+                pagination = new
+                {
+                    currentPage = page,
+                    pageSize = pageSize,
+                    totalItems = totalProductos,
+                    totalPages = totalPages,
+                    hasNextPage = page < totalPages,
+                    hasPreviousPage = page > 1
+                }
+            });
         }
         catch (Exception ex)
         {
