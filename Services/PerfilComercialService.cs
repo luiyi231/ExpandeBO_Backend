@@ -37,6 +37,32 @@ public class PerfilComercialService : IPerfilComercialService
             throw new ArgumentException("La dirección no puede exceder 50 caracteres");
         }
         
+        // Validar teléfono (exactamente 8 dígitos si se proporciona)
+        if (!string.IsNullOrWhiteSpace(perfil.Telefono))
+        {
+            if (!System.Text.RegularExpressions.Regex.IsMatch(perfil.Telefono, @"^\d{8}$"))
+            {
+                throw new ArgumentException("El teléfono debe tener exactamente 8 dígitos numéricos");
+            }
+        }
+        
+        // Validar email (formato válido si se proporciona)
+        if (!string.IsNullOrWhiteSpace(perfil.Email))
+        {
+            try
+            {
+                var emailAddress = new System.Net.Mail.MailAddress(perfil.Email);
+                if (emailAddress.Address != perfil.Email)
+                {
+                    throw new ArgumentException("El email no es válido");
+                }
+            }
+            catch
+            {
+                throw new ArgumentException("El email no es válido");
+            }
+        }
+        
         // Validar que latitud y longitud sean obligatorios
         if (!perfil.Latitud.HasValue || !perfil.Longitud.HasValue)
         {
@@ -105,6 +131,32 @@ public class PerfilComercialService : IPerfilComercialService
         if (!string.IsNullOrWhiteSpace(perfil.Direccion) && perfil.Direccion.Length > 50)
         {
             throw new ArgumentException("La dirección no puede exceder 50 caracteres");
+        }
+        
+        // Validar teléfono (exactamente 8 dígitos si se proporciona)
+        if (!string.IsNullOrWhiteSpace(perfil.Telefono))
+        {
+            if (!System.Text.RegularExpressions.Regex.IsMatch(perfil.Telefono, @"^\d{8}$"))
+            {
+                throw new ArgumentException("El teléfono debe tener exactamente 8 dígitos numéricos");
+            }
+        }
+        
+        // Validar email (formato válido si se proporciona)
+        if (!string.IsNullOrWhiteSpace(perfil.Email))
+        {
+            try
+            {
+                var emailAddress = new System.Net.Mail.MailAddress(perfil.Email);
+                if (emailAddress.Address != perfil.Email)
+                {
+                    throw new ArgumentException("El email no es válido");
+                }
+            }
+            catch
+            {
+                throw new ArgumentException("El email no es válido");
+            }
         }
         
         // Validar que latitud y longitud sean obligatorios

@@ -126,6 +126,10 @@ public class PerfilesController : ControllerBase
             var nuevoPerfil = await _perfilComercialService.CreatePerfilAsync(perfil, empresaId);
             return CreatedAtAction(nameof(GetPerfil), new { id = nuevoPerfil.Id }, nuevoPerfil);
         }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
         catch (InvalidOperationException ex)
         {
             return BadRequest(new { message = ex.Message });
@@ -180,6 +184,10 @@ public class PerfilesController : ControllerBase
         catch (UnauthorizedAccessException ex)
         {
             return Forbid(ex.Message);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { message = ex.Message });
         }
         catch (InvalidOperationException ex)
         {
