@@ -26,9 +26,21 @@ public class PerfilComercialService : IPerfilComercialService
         {
             throw new ArgumentException("El nombre del perfil comercial es requerido");
         }
-        if (perfil.Nombre.Length > 100)
+        if (perfil.Nombre.Length > 50)
         {
-            throw new ArgumentException("El nombre del perfil comercial no puede exceder 100 caracteres");
+            throw new ArgumentException("El nombre del perfil comercial no puede exceder 50 caracteres");
+        }
+        
+        // Validar dirección
+        if (!string.IsNullOrWhiteSpace(perfil.Direccion) && perfil.Direccion.Length > 50)
+        {
+            throw new ArgumentException("La dirección no puede exceder 50 caracteres");
+        }
+        
+        // Validar que latitud y longitud sean obligatorios
+        if (!perfil.Latitud.HasValue || !perfil.Longitud.HasValue)
+        {
+            throw new ArgumentException("La latitud y longitud son obligatorias para el perfil comercial");
         }
 
         // Validar límite de perfiles según el plan
@@ -84,9 +96,21 @@ public class PerfilComercialService : IPerfilComercialService
         {
             throw new ArgumentException("El nombre del perfil comercial es requerido");
         }
-        if (perfil.Nombre.Length > 100)
+        if (perfil.Nombre.Length > 50)
         {
-            throw new ArgumentException("El nombre del perfil comercial no puede exceder 100 caracteres");
+            throw new ArgumentException("El nombre del perfil comercial no puede exceder 50 caracteres");
+        }
+        
+        // Validar dirección
+        if (!string.IsNullOrWhiteSpace(perfil.Direccion) && perfil.Direccion.Length > 50)
+        {
+            throw new ArgumentException("La dirección no puede exceder 50 caracteres");
+        }
+        
+        // Validar que latitud y longitud sean obligatorios
+        if (!perfil.Latitud.HasValue || !perfil.Longitud.HasValue)
+        {
+            throw new ArgumentException("La latitud y longitud son obligatorias para el perfil comercial");
         }
 
         // Validar que no se repita la ciudad (excepto si es el mismo perfil)

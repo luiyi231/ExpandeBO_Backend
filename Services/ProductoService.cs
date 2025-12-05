@@ -29,9 +29,9 @@ public class ProductoService : IProductoService
         {
             throw new ArgumentException("El precio debe ser mayor a 0");
         }
-        if (producto.Precio > 999999)
+        if (producto.Precio > 99999)
         {
-            throw new ArgumentException("El precio no puede ser mayor a 999999");
+            throw new ArgumentException("El precio no puede ser mayor a 99999");
         }
 
         // Validar stock
@@ -66,9 +66,9 @@ public class ProductoService : IProductoService
         {
             throw new ArgumentException("El precio debe ser mayor a 0");
         }
-        if (producto.Precio > 999999)
+        if (producto.Precio > 99999)
         {
-            throw new ArgumentException("El precio no puede ser mayor a 999999");
+            throw new ArgumentException("El precio no puede ser mayor a 99999");
         }
 
         // Validar stock

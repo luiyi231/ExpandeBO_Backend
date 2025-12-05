@@ -80,6 +80,21 @@ public class AuthService : IAuthService
         {
             throw new ArgumentException("El apellido solo puede contener letras y espacios, máximo 50 caracteres");
         }
+        
+        // Validar teléfono si se proporciona (8 dígitos)
+        if (!string.IsNullOrWhiteSpace(request.Telefono))
+        {
+            if (!System.Text.RegularExpressions.Regex.IsMatch(request.Telefono, @"^\d{8}$"))
+            {
+                throw new ArgumentException("El teléfono debe tener exactamente 8 dígitos");
+            }
+        }
+        
+        // Validar dirección si se proporciona (máximo 50 caracteres)
+        if (!string.IsNullOrWhiteSpace(request.Direccion) && request.Direccion.Length > 50)
+        {
+            throw new ArgumentException("La dirección no puede exceder 50 caracteres");
+        }
 
         var usuarioExistente = await _usuarioRepository.GetByEmailAsync(request.Email);
         if (usuarioExistente != null)
@@ -153,15 +168,55 @@ public class AuthService : IAuthService
         {
             throw new ArgumentException("El apellido solo puede contener letras y espacios, máximo 50 caracteres");
         }
+        
+        // Validar teléfono si se proporciona (8 dígitos)
+        if (!string.IsNullOrWhiteSpace(request.Telefono))
+        {
+            if (!System.Text.RegularExpressions.Regex.IsMatch(request.Telefono, @"^\d{8}$"))
+            {
+                throw new ArgumentException("El teléfono debe tener exactamente 8 dígitos");
+            }
+        }
+        
+        // Validar dirección si se proporciona (máximo 50 caracteres)
+        if (!string.IsNullOrWhiteSpace(request.Direccion) && request.Direccion.Length > 50)
+        {
+            throw new ArgumentException("La dirección no puede exceder 50 caracteres");
+        }
 
         // Validar razón social
         if (string.IsNullOrWhiteSpace(request.RazonSocial))
         {
             throw new ArgumentException("La razón social es requerida");
         }
-        if (request.RazonSocial.Length > 100)
+        if (request.RazonSocial.Length > 50)
         {
-            throw new ArgumentException("La razón social no puede exceder 100 caracteres");
+            throw new ArgumentException("La razón social no puede exceder 50 caracteres");
+        }
+        
+        // Validar NIT (7-10 dígitos)
+        if (string.IsNullOrWhiteSpace(request.NIT))
+        {
+            throw new ArgumentException("El NIT es requerido");
+        }
+        if (!System.Text.RegularExpressions.Regex.IsMatch(request.NIT, @"^\d{7,10}$"))
+        {
+            throw new ArgumentException("El NIT debe tener entre 7 y 10 dígitos");
+        }
+        
+        // Validar teléfono si se proporciona (8 dígitos)
+        if (!string.IsNullOrWhiteSpace(request.Telefono))
+        {
+            if (!System.Text.RegularExpressions.Regex.IsMatch(request.Telefono, @"^\d{8}$"))
+            {
+                throw new ArgumentException("El teléfono debe tener exactamente 8 dígitos");
+            }
+        }
+        
+        // Validar dirección si se proporciona (máximo 50 caracteres)
+        if (!string.IsNullOrWhiteSpace(request.Direccion) && request.Direccion.Length > 50)
+        {
+            throw new ArgumentException("La dirección no puede exceder 50 caracteres");
         }
 
         var usuarioExistente = await _usuarioRepository.GetByEmailAsync(request.Email);
