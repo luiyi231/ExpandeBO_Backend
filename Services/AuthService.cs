@@ -194,14 +194,14 @@ public class AuthService : IAuthService
             throw new ArgumentException("La razón social no puede exceder 50 caracteres");
         }
         
-        // Validar NIT (7-10 dígitos)
+        // Validar NIT (obligatorio, 7-12 dígitos numéricos)
         if (string.IsNullOrWhiteSpace(request.NIT))
         {
             throw new ArgumentException("El NIT es requerido");
         }
-        if (!System.Text.RegularExpressions.Regex.IsMatch(request.NIT, @"^\d{7,10}$"))
+        if (!System.Text.RegularExpressions.Regex.IsMatch(request.NIT, @"^\d{7,12}$"))
         {
-            throw new ArgumentException("El NIT debe tener entre 7 y 10 dígitos");
+            throw new ArgumentException("El NIT debe tener entre 7 y 12 dígitos numéricos");
         }
         
         // Validar teléfono si se proporciona (8 dígitos)

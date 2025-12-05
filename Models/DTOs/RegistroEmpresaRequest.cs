@@ -28,7 +28,7 @@ public class RegistroEmpresaRequest
     public string RazonSocial { get; set; } = string.Empty;
     
     [Required(ErrorMessage = "El NIT es requerido")]
-    [RegularExpression(@"^\d{7,10}$", ErrorMessage = "El NIT debe tener entre 7 y 10 dígitos")]
+    [RegularExpression(@"^\d{7,12}$", ErrorMessage = "El NIT debe tener entre 7 y 12 dígitos numéricos")]
     public string NIT { get; set; } = string.Empty;
     
     [MaxLength(50, ErrorMessage = "La dirección no puede exceder 50 caracteres")]
