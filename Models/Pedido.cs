@@ -52,19 +52,22 @@ public class Pedido
     public string? RutaGeometry { get; set; } // Polyline codificado de la ruta completa
 
     [BsonElement("latitudRepartidor")]
-    public double? LatitudRepartidor { get; set; } // Última latitud del repartidor
+    public double? LatitudRepartidor { get; set; } // Ãšltima latitud del repartidor
 
     [BsonElement("longitudRepartidor")]
-    public double? LongitudRepartidor { get; set; } // Última longitud del repartidor
+    public double? LongitudRepartidor { get; set; } // Ãšltima longitud del repartidor
 
     [BsonElement("progresoRuta")]
     public double? ProgresoRuta { get; set; } // Progreso de la ruta (0.0 a 1.0)
 
     [BsonElement("fechaInicioRuta")]
-    public DateTime? FechaInicioRuta { get; set; } // Cuando empezó la ruta
+    public DateTime? FechaInicioRuta { get; set; } // Cuando empezÃ³ la ruta
 
     [BsonElement("duracionRutaSegundos")]
-    public int? DuracionRutaSegundos { get; set; } // Duración estimada de la ruta en segundos
+    public int? DuracionRutaSegundos { get; set; } // DuraciÃ³n estimada de la ruta en segundos
+
+    [BsonElement("puntuacionEntrega")]
+    public int? PuntuacionEntrega { get; set; } // PuntuaciÃ³n de la entrega (1-5 estrellas)
 }
 
 public class PedidoItem
@@ -85,5 +88,4 @@ public class PedidoItem
     [BsonElement("subtotal")]
     public decimal Subtotal { get; set; }
 }
-
 

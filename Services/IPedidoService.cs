@@ -13,6 +13,7 @@ public interface IPedidoService
         double? progresoRuta,
         string? rutaGeometry = null,
         int? duracionRutaSegundos = null);
+    Task<Pedido> UpdatePuntuacionEntregaAsync(string pedidoId, int puntuacion);
     Task<Pedido?> GetPedidoByIdAsync(string id);
     Task<List<Pedido>> GetPedidosByClienteAsync(string clienteId);
     Task<List<Pedido>> GetPedidosByPerfilComercialAsync(string perfilComercialId);

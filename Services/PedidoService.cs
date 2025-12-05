@@ -217,5 +217,31 @@ public class PedidoService : IPedidoService
 
         return await _pedidoRepository.UpdateAsync(pedido);
     }
+
+    public async Task<Pedido> UpdatePuntuacionEntregaAsync(string pedidoId, int puntuacion)
+    {
+        var pedido = await _pedidoRepository.GetByIdAsync(pedidoId);
+        if (pedido == null)
+        {
+            throw new KeyNotFoundException("Pedido no encontrado");
+        }
+
+        // Validar que la puntuación esté entre 1 y 5
+        if (puntuacion < 1 || puntuacion > 5)
+        {
+            throw new ArgumentException("La puntuación debe estar entre 1 y 5");
+        }
+
+        // Validar que el pedido esté entregado
+        if (pedido.Estado != "Entregado")
+        {
+            throw new InvalidOperationException("Solo se puede puntuar un pedido que ha sido entregado");
+        }
+
+        pedido.PuntuacionEntrega = puntuacion;
+        pedido.FechaActualizacion = DateTime.UtcNow;
+
+        return await _pedidoRepository.UpdateAsync(pedido);
+    }
 }
 

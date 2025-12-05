@@ -322,10 +322,65 @@ public class PedidosController : ControllerBase
             return StatusCode(500, new { message = "Error interno del servidor", error = ex.Message });
         }
     }
+
+    [HttpPut("{id}/puntuacion")]
+    [Authorize(Policy = "ClienteOrEmpresaOrAdmin")]
+    public async Task<ActionResult<Pedido>> UpdatePuntuacion(string id, [FromBody] UpdatePuntuacionRequest request)
+    {
+        try
+        {
+            var usuarioId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var rol = User.FindFirst("Rol")?.Value;
+
+            // Obtener el pedido para validar permisos
+            var pedido = await _pedidoService.GetPedidoByIdAsync(id);
+            if (pedido == null)
+            {
+                return NotFound(new { message = "Pedido no encontrado" });
+            }
+
+            // Validar permisos - solo el cliente puede puntuar su pedido
+            if (rol == "Cliente")
+            {
+                if (pedido.ClienteId != usuarioId)
+                {
+                    return Forbid("No tienes permiso para puntuar este pedido");
+                }
+            }
+            else
+            {
+                return Forbid("Solo los clientes pueden puntuar pedidos");
+            }
+
+            var pedidoActualizado = await _pedidoService.UpdatePuntuacionEntregaAsync(id, request.Puntuacion);
+            return Ok(pedidoActualizado);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { message = ex.Message });
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { message = "Error interno del servidor", error = ex.Message });
+        }
+    }
 }
 
 public class UpdateEstadoRequest
 {
     public string Estado { get; set; } = string.Empty;
+}
+
+public class UpdatePuntuacionRequest
+{
+    public int Puntuacion { get; set; }
 }
 
